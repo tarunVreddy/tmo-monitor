@@ -72,12 +72,12 @@ if __name__ == "__main__":
     # Check for eNB ID if an eNB ID was supplied & reboot on eNB ID wasn't False in the .env
     if config.connection['enbid'] and config.reboot['enbid'] or log_all:
       site_meta = gw_control.get_site_info()
-      connection['enbid'] = site_meta['eNBID']
-      if (site_meta['eNBID'] != config.connection['enbid']) and config.reboot['enbid']:
+      connection['enbid'] = site_meta.get('eNBID', 'Unknown')
+      if (connection['enbid'] != config.connection['enbid']) and config.reboot['enbid']:
         logging.info('Not on eNB ID ' + str(config.connection['enbid']) + ', on ' + str(site_meta['eNBID']) + '.')
         reboot_requested = True
       else:
-        print('eNB ID check passed, on ' + str(site_meta['eNBID']) + '.')
+        print('eNB ID check passed, on ' + str(connection['enbid']) + '.')
 
     # Check for preferred bands regardless of reboot on band mismatch
     if config.reboot['4G_band'] or config.reboot['5G_band'] or log_all:
@@ -91,6 +91,8 @@ if __name__ == "__main__":
           logging.info('Not on ' + ('one of ' if len(primary_band) > 1 else '') + ', '.join(primary_band) + '.')
           if config.reboot['4G_band']:
             reboot_requested = True
+        elif band_4g is None:
+          print('No 4G signal.')
         else:
           print('Camping on ' + band_4g + '.')
 

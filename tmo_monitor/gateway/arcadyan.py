@@ -31,7 +31,11 @@ class CubeController(ControllerBase):
       sys.exit(ExitStatus.API_ERROR.value)
 
     stat_request.raise_for_status()
-    meta = stat_request.json()['cell']['4g']
+    json_data = stat_request.json()
+    if 'cell' not in json_data or '4g' not in json_data['cell']:
+        logging.critical("Expected keys not found in the response, exiting.")
+        return {}
+    meta = json_data['cell']['4g']
 
     return {
       'eNBID': math.floor(int(meta['ecgi'][6:])/256),
@@ -65,7 +69,10 @@ class CubeController(ControllerBase):
     return self.get_all_info_web()['time']['upTime']
   def get_signal_info(self):
     info = self.get_all_info_web()
-    lte_info = info['signal']['4g']['bands']
+    if '4g' in info['signal']:
+      lte_info = info['signal']['4g']['bands']
+    else:
+      lte_info = []
     if '5g' in info['signal']:
       nr_info = info['signal']['5g']['bands']
     else:
